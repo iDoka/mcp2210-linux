@@ -1,0 +1,78 @@
+$ LD_LIBRARY_PATH=`pwd` ./mcp2210-util --help | tee README
+Usage: ./mcp2210-util [options] command [arguments]
+Options:
+  -h --help        Show this help
+  -v --verbose     Verbose output
+  -d --device      Device name (default /dev/usb2spi_bridge)
+  -i --in <file>   An input file (default: standard in)
+  -o --out <file>  An output file (default: standard out)
+
+SPI Options:
+  -D --spidev     SPI device (default /dev/spidev0.0)
+  -s --speed      max speed in Hz (default 20kHz)
+  -e --delay      delay in uS between messages (default 0)
+  -b --bpw        bits per word (default 8, !=8 unsupported by mcp2210)
+  -l --loop       enable loopback (default disabled, unsupported by mcp2210)
+  -H --cpha <1|0> clock phase (default 1)
+  -O --cpol <1|0> clock polarity (default 1)
+  -L --lsb        least significant bit first (default MSB first)
+  -C --cs-high    chip select active high (default low)
+  -3 --3wire      SDI/SDO signals shared (default disabled)
+
+Commands: (this section may be incomplete, incorrect, etc.)
+  get    config   Retrieve configuration from device.
+  set    config <mask>
+                  Upload configuration to device.  The value of mask specifies
+                  the information set(s) from settings.h to upload to the
+                  device ORed together:
+                    1  current chip settings
+                    2  power-up chip settings
+                    4  current spi transfer settings
+                    8  power-up spi transfer settings
+                    16 key USB parameters
+                    32 board config (causes spi_master to be probed)
+
+  encode          Encodes settings (in settings.h) into creek format.
+  decode          Decodes creek blob into settings and outputs to stderr. Note
+                  pin modes in settings.h must match.
+
+  eeprom          Reads from or writes to user-EEPROM area of device.
+         read  addr=n size=n
+         write addr=n size=n
+  test            Runs a unit test
+         bitstream
+         config
+  msg             Send a raw message to the MCP2210 device.
+  spi "<msg_string>"
+             Send an SPI message to the spidev device (use -d to specify
+             device). A valid msg_string will consist of whitespace,
+             hexadecimal digit pairs and comma. A comma will delimit
+             individual transfers within the message. See Examples below.
+             (Note, currently lacking support for an input file)
+
+Examples:
+  ./mcp2210-util -d /dev/usb2spi_bridge0 get config > creek.dat
+      Retrieve the settings from the device and encode the board_config
+      into creek.dat (note: subject to change soon)
+
+  ./mcp2210-util set config 1
+      Set the current chip settings to the values from settings.h to the
+      default device /dev/usb2spi_bridge0
+
+  ./mcp2210-util set config 63
+      Upload all of the settings in settings.h to device and probe spi
+
+  ./mcp2210-util get eeprom addr=0 size=0x100 > eeprom.dat
+    or
+  ./mcp2210-util -o eeprom.dat get eeprom addr=0 size=0x100
+      Read the user-EEPROM area and write it to eeprom.dat
+
+  ./mcp2210-util test config
+      Run the configuration unit test
+
+  ./mcp2210-util spi 0100
+      Send an spi message with one transfer that's two bytes long
+
+  ./mcp2210-util spi 38,00,00,00
+      Send an spi message with four transfers, each one byte in size (reads
+      the CONFIG register on an L6470)
