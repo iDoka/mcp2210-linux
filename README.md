@@ -1,3 +1,8 @@
+MCP2210 driver for Linux for Russian users
+==========================================
+
+[Русскоязычное описание как завести MCP2210 в Линуксе с комментариями](http://idoka.ru/usb2spi-mcp2210-in-linux)
+
 MCP2210 driver for Linux
 ========================
 
